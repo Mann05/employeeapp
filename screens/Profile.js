@@ -3,7 +3,7 @@ import { StyleSheet, Text, View,Image,Modal,Alert,Linking,Platform,ActivityIndic
 import {LinearGradient} from 'expo-linear-gradient';
 import { Title,Card,Button } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons'
-
+import {baseurl} from '../helper/constants';
 const Profile=(props)=>{
     const [loading,setLoading] = useState(false)
     const  {_id,name,picture,phone,salary,position,email}  = props.route.params.item;
@@ -16,7 +16,7 @@ const Profile=(props)=>{
     }
     const deleteEmployee = ()=>{
         setLoading(true);
-        fetch("http://60297502.ngrok.io/employee/delete",{
+        fetch(`${baseurl}/employee/delete`,{
             method:"post",
             headers:{
                 'Content-Type':'application/json'
@@ -27,7 +27,6 @@ const Profile=(props)=>{
         })
         .then(res => res.json() )
         .then(data =>{
-            console.log(data)
             Alert.alert(`${data.name} Deleted Successfully`)
             setLoading(false);
             props.navigation.navigate("Home");
@@ -85,7 +84,13 @@ const Profile=(props)=>{
                 </View>
             </Card>
             <View style={{flexDirection : "row",justifyContent:"space-around",padding:10}}>
-                <Button icon="square-edit-outline" mode="contained" theme={theme} onPress={()=>{console.log('eDIT')}} >Edit</Button>
+                <Button 
+                    icon="square-edit-outline" 
+                    mode="contained" 
+                    theme={theme} 
+                    onPress={()=>{props.navigation.navigate("Create",{_id,name,picture,phone,salary,position,email})}} >
+                Edit
+                </Button>
                 {loading ?
                     <ActivityIndicator size="large" color="black" /> :
                     <Button icon="delete" mode="contained" theme={themeDelete} onPress={()=>{ deleteEmployee() }} >Delete</Button>

@@ -3,18 +3,39 @@ import { StyleSheet, Text, View,Image,Modal,Alert,ActivityIndicator,KeyboardAvoi
 import { TextInput,Button} from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
-
+import {baseurl} from '../helper/constants';
 const CreateEmployee = (props)=>{
-    const [name,setName] = useState("")
-    const [email,setEmail] = useState("")
-    const [picture,setPicture] = useState("")
-    const [phone,setPhone] = useState("")
-    const [salary,setSalary] = useState("")
-    const [position,setPosition] = useState("")
+    const getDetails=(type)=>{
+        if(props.route.params){
+            switch(type){
+                case "name":
+                    return props.route.params.name;
+                case "email":
+                    return props.route.params.email;
+                case "picture":
+                    return props.route.params.picture;
+                case "phone":
+                    return props.route.params.phone;
+                case "salary":
+                    return props.route.params.salary;
+                case "position":
+                    return props.route.params.position;
+            }
+        }else{
+            return  "";
+        }
+    }
+    
+    const [name,setName] = useState(getDetails("name"))
+    const [email,setEmail] = useState(getDetails("email"))
+    const [picture,setPicture] = useState(getDetails("picture"))
+    const [phone,setPhone] = useState(getDetails("phone"))
+    const [salary,setSalary] = useState(getDetails("salary"))
+    const [position,setPosition] = useState(getDetails("position"))
     const [modal,setModal] = useState(false)
     const [loading,setLoading] = useState(false)
     const [saveload,setSaveload] = useState(false)
-
+    const [shifting,setShifting] = useState(false)
     const pickFromGallery = async ()=>{
         const { granted } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
         if(granted){
@@ -81,7 +102,7 @@ const CreateEmployee = (props)=>{
 
     const SaveEmployee = ()=>{
         setSaveload(true)
-        fetch("http://60297502.ngrok.io/employee/save",{
+        fetch(`${baseurl}/employee/save`,{
             method:"POST",
             headers:{
                 'Content-Type':'application/json'
@@ -106,9 +127,38 @@ const CreateEmployee = (props)=>{
             setSaveload(false)
         })
     }
+
+    const UpdateEmployee = ()=>{
+        setSaveload(true)
+        fetch(`${baseurl}/employee/update`,{
+            method:"POST",
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify({
+                id:props.route.params._id,
+                name,
+                email,
+                phone,
+                picture,
+                salary,
+                position
+            })
+        })
+        .then(res=>res.json())
+        .then(res=>{
+            console.log(res);
+            Alert.alert(res.message)
+            setSaveload(false)
+            props.navigation.navigate("Home")
+        }).catch(e=>{
+            Alert.alert(e);
+            setSaveload(false)
+        })
+    }
     return(
-        <View style={styles.root}>
-            <KeyboardAvoidingView behavior="position">
+        <KeyboardAvoidingView behavior="position" style={styles.root} enabled={shifting}>
+           <View >
                 <TextInput
                     label="Name"
                     value={name}
@@ -116,6 +166,7 @@ const CreateEmployee = (props)=>{
                     onChangeText={(text)=>{ setName(text) }}
                     style={styles.textInput}
                     theme={theme}
+                    onFocus={()=>{setShifting(false)}}
                 />
                 <TextInput
                     label="Email"
@@ -124,6 +175,7 @@ const CreateEmployee = (props)=>{
                     onChangeText={(text)=>{ setEmail(text) }}
                     style={styles.textInput}
                     theme={theme}
+                    onFocus={()=>{setShifting(false)}}
                 />
                 <TextInput
                     label="Phone"
@@ -133,6 +185,7 @@ const CreateEmployee = (props)=>{
                     keyboardType="number-pad"
                     style={styles.textInput}
                     theme={theme}
+                    onFocus={()=>{setShifting(false)}}
                 />
                 <TextInput
                     label="Salary"
@@ -142,6 +195,7 @@ const CreateEmployee = (props)=>{
                     keyboardType="number-pad"
                     style={styles.textInput}
                     theme={theme}
+                    onFocus={()=>{setShifting(true)}}
                 />
                 <TextInput
                     label="Position"
@@ -151,6 +205,7 @@ const CreateEmployee = (props)=>{
                     // keyboardType="number-pad"
                     style={styles.textInput}
                     theme={theme}
+                    onFocus={()=>{setShifting(true)}}
                 />
                 <Button 
                     icon={picture === "" ?"upload":"check"} 
@@ -161,6 +216,12 @@ const CreateEmployee = (props)=>{
                     {picture === "" ?"Upload":"Uploaded" }
                 </Button>
                 {saveload == false ?
+                    props.route.params ? 
+                    <Button icon="content-save" style={styles.textInput} mode="contained" theme={theme} 
+                    onPress={()=>UpdateEmployee()} >
+                        Update
+                    </Button>                    
+                    :
                     <Button icon="content-save" style={styles.textInput} mode="contained" theme={theme} 
                     onPress={()=>SaveEmployee()} >
                         Save
@@ -195,8 +256,8 @@ const CreateEmployee = (props)=>{
                         </Button>
                     </View>
                 </Modal>
-            </KeyboardAvoidingView>
-        </View>
+            </View>
+        </KeyboardAvoidingView>
     )
 }
 

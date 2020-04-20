@@ -32,10 +32,10 @@ router.post('/update',(req,res)=>{
         position : req.body.position
     })
     .then(data=>{
-        return res.send(data);
+        return res.json({codee:1,message:'Updated Successfully'});
     })
     .catch(e=>{
-        return res.send(e);
+        return res.json({code:0,message:e});
     });
 });
 

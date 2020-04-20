@@ -1,15 +1,15 @@
 import React,{useEffect,useState} from 'react';
 import { StyleSheet, Text, View,Image,FlatList,ActivityIndicator } from 'react-native';
-import {Card, FAB}  from 'react-native-paper';
+import {Card, FAB,Title,Paragraph,Content,Cover,Actions,Button}  from 'react-native-paper';
+import {baseurl} from '../helper/constants';
 const Home=(props)=>{
     const [data,setData] = useState([])
     const [loading,setLoading] = useState(true)
 
     const fetchDataOnPull = ()=>{
-        fetch("http://60297502.ngrok.io/employee")
+        fetch(`${baseurl}/employee`)
         .then(res => res.json() )
         .then(data =>{
-            console.log(data)
             setData(data)
             setLoading(false)
         })
@@ -24,30 +24,25 @@ const Home=(props)=>{
 
     const renderList  = ((item)=>{
         return(
-            <Card>
-    <Card.Title title="Card Title" subtitle="Card Subtitle" left={LeftContent} />
-    <Card.Content>
-      <Title>Card title</Title>
-      <Paragraph>Card content</Paragraph>
-    </Card.Content>
-    <Card.Cover source={{ uri: 'https://picsum.photos/700' }} />
-    <Card.Actions>
-      <Button>Cancel</Button>
-      <Button>Ok</Button>
-    </Card.Actions>
-  </Card>
+            <Card style={{margin:5}} onPress={()=>{props.navigation.navigate("Profile",{item})}}>
+                <Card.Cover source={{ uri: item.picture }} />
+                <Card.Content>
+                    <Title>{item.name}</Title>
+                    <Paragraph>{item.position}</Paragraph>
+                </Card.Content>
+            </Card>
         )
     });
     return(
         <View style={{flex:1}}>
             {loading ? 
-                <ActivityIndicator size="large" color="#ffffff" style={{alignContent:"center",justifyContent:"center"}} /> : 
+                <ActivityIndicator size="large" color="#000" style={{alignContent:"center",justifyContent:"center"}} /> : 
                 <FlatList
                     data={data}
                     renderItem = {({item})=>{
                         return    renderList(item)
                     }}
-                    keyExtractor = {item =>`${item.id}` } //Convert id int to string
+                    keyExtractor = {(item,index) =>`${index.toString()}` } //Convert id int to string
                     onRefresh={()=>{fetchDataOnPull()}}
                     refreshing={loading}
                 />
